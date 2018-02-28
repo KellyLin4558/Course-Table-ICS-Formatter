@@ -98,14 +98,10 @@ var icsFormatter = function() {
 
 			calendarStart.push('BEGIN:STANDARD');
 
-			calendarStart.push('TZOFFSETFROM:+0800');
-
-			calendarStart.push('TZOFFSETTO:+0800');
-
-			calendarStart.push('TZNAME:CST');
+			calendarStart.push('TZOFFSETFROM:+0800', 'TZOFFSETTO:+0800', 'TZNAME:CST');
 
 			calendarStart.push('DTSTART:19700101T000000');
-			
+
 			calendarStart.push('END:STANDARD');
 			
 			calendarStart.push('END:VTIMEZONE')
@@ -204,7 +200,7 @@ var icsFormatter = function() {
 				}
 			}
 
-			calendarEventArray.push('TRANSP:TRANSPARENT', 'END:VEVENT');
+			calendarEventArray.push('TRANSP:OPAQUE', 'STATUS:CONFIRMED', 'END:VEVENT');
 
 			var ret = calendarEventArray.join(SEPARATOR);
 
@@ -282,7 +278,6 @@ if (Boolean(window.$) && Boolean(window.table0)) {
 		[15, 5, 15, 50],
 		[15, 55, 16, 40],
 		[18, 0, 18, 45],
-		[18, 0, 19, 35],
 		[18, 50, 19, 35],
 		[19, 40, 20, 25]
 	]
