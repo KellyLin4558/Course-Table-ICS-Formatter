@@ -60,7 +60,8 @@ var icsFormatter = function() {
 	var SEPARATOR = (navigator.appVersion.indexOf('Win') !== -1) ? '\r\n' : '\n';
 	var calendarEvents = [];
 	var calendarName = 'Calendar';
-	var prodName = '-//eastpiger//eastpiger.com//ICS: iCalendar Generator';
+	var timezoneName = 'Asia/Shanghai'
+	var prodName = '-//simonsmh//ICS//EN';
 
 	return {
 		/**
@@ -80,11 +81,34 @@ var icsFormatter = function() {
 				'BEGIN:VCALENDAR',
 				'VERSION:2.0',
 				'CALSCALE:GREGORIAN',
+				'METHOD:PUBLISH'
 			];
 
 			calendarStart.push('PRODID:' + prodName);
 
 			calendarStart.push('X-WR-CALNAME:' + calendarName);
+
+			calendarStart.push('X-WR-TIMEZONE:' + timezoneName);
+
+			calendarStart.push('BEGIN:VTIMEZONE');
+			
+			calendarStart.push('TZID:' + timezoneName);
+
+			calendarStart.push('X-LIC-LOCATION:' + timezoneName);
+
+			calendarStart.push('BEGIN:STANDARD');
+
+			calendarStart.push('TZOFFSETFROM:+0800');
+
+			calendarStart.push('TZOFFSETTO:+0800');
+
+			calendarStart.push('TZNAME:CST');
+
+			calendarStart.push('DTSTART:19700101T000000');
+			
+			calendarStart.push('END:STANDARD');
+			
+			calendarStart.push('END:VTIMEZONE')
 
 			var ret = calendarStart.join(SEPARATOR);
 
@@ -97,7 +121,7 @@ var icsFormatter = function() {
 			return ret;
 		},
 
-		'addEvent': function(subject, description, location, begin, end, rrul, url, categories, alarms) {
+		'addEvent': function(subject, description, location, begin, end, rrul, url, alarms) {
 			calendarEvents.push({
 				subject: subject,
 				description: description,
@@ -106,12 +130,11 @@ var icsFormatter = function() {
 				end: end,
 				rrul: rrul,
 				url: url,
-				categories: categories,
 				alarms: alarms
-			 });
+			});
 		},
 
-		'formatEvent': function(subject, description, location, begin, end, rrul, url, categories, alarms) {
+		'formatEvent': function(subject, description, location, begin, end, rrul, url, alarms) {
 			function time_convert(t) {
 				var time_convert_year = ("0000" + (t.getUTCFullYear().toString())).slice(-4);
 				var time_convert_month = ("00" + ((t.getUTCMonth() + 1).toString())).slice(-2);
@@ -126,7 +149,7 @@ var icsFormatter = function() {
 
 			var calendarEventArray = [];
 
-			calendarEventArray.push('BEGIN:VEVENT', 'CLASS:PUBLIC', 'X-MICROSOFT-CDO-BUSYSTATUS:BUSY', 'X-MICROSOFT-CDO-IMPORTANCE:1');
+			calendarEventArray.push('BEGIN:VEVENT');
 
 			if (!(typeof begin === 'undefined'))
 				calendarEventArray.push('DTSTART:' + time_convert(begin));
@@ -158,10 +181,6 @@ var icsFormatter = function() {
 			if (!(typeof location === 'undefined'))
 				calendarEventArray.push('LOCATION:' + location);
 
-			if (!(typeof categories === 'undefined')) {
-				calendarEventArray.push('CATEGORIES:' + categories.toString());
-			}
-
 			if (!(typeof alarms === 'undefined')) {
 				for (var i in alarms) {
 					calendarEventArray.push('BEGIN:VALARM');
@@ -183,7 +202,6 @@ var icsFormatter = function() {
 
 					calendarEventArray.push('END:VALARM');
 				}
-				calendarEventArray.push('CATEGORIES:' + categories.toString());
 			}
 
 			calendarEventArray.push('TRANSP:TRANSPARENT', 'END:VEVENT');
@@ -204,7 +222,6 @@ var icsFormatter = function() {
 					calendarEvents[i].end,
 					calendarEvents[i].rrul,
 					calendarEvents[i].url,
-					calendarEvents[i].categories,
 					calendarEvents[i].alarms
 				);
 				if (t)
@@ -226,7 +243,7 @@ var icsFormatter = function() {
 			if (formatedEvents) {
 
 				ext = (typeof ext !== 'undefined') ? ext : '.ics';
-				filename = (typeof filename !== 'undefined') ? filename : 'calendar';
+				filename = (typeof filename !== 'undefined') ? filename : calendarName;
 
 				var blob = new Blob([formatedEvents], {type: 'attachment/csv;charset=utf-8'});
 				saveAs(blob, filename + ext);
@@ -254,19 +271,20 @@ var icsFormatter = function() {
 
 if (Boolean(window.$) && Boolean(window.table0)) {
 	var classTable = [
-		[8, 15, 9, 0],
+		[8, 20, 9, 5],
 		[9, 10, 9, 55],
 		[10, 15, 11, 0],
-		[11, 10, 11, 55],
-		[13, 0, 13, 45],
-		[13, 55, 14, 40],
-		[15, 0, 15, 45],
+		[11, 5, 11, 50],
+		[11, 55, 12, 25],
+		[12, 30, 13, 00],
+		[13, 10, 13, 55],
+		[14, 0, 14, 45],
+		[15, 5, 15, 50],
 		[15, 55, 16, 40],
-		[16, 50, 17, 35],
-		[17, 45, 18, 30],
-		[18, 40, 19, 25],
-		[19, 35, 20, 20],
-		[20, 30, 21, 15]
+		[18, 0, 18, 45],
+		[18, 0, 19, 35],
+		[18, 50, 19, 35],
+		[19, 40, 20, 25]
 	]
 	var eventsList = [];
 
@@ -322,13 +340,12 @@ if (Boolean(window.$) && Boolean(window.table0)) {
 	function addClass(icsObj, firstMonday, data, weekday, startclass, last) {
 		var title = data.courseName;
 		var place = data.roomName;
-		var categories = ["ShanghaiTech", data.teacherName, "Course Table ICS Formatter"];
 		var alarms = [
-			{ ACTION: 'AUDIO', TRIGGER: '-PT10M' }
+			{ ACTION: 'DISPLAY', DESCRIPTION: 'This is an event reminder', TRIGGER: '-P0DT0H30M0S' }
 		];
 		var url = '';
 
-		var description = data.courseName + " " + data.roomName + " " + data.teacherName; //'A very long and boring description of what is the agenda of this super exclusiv pow-wow';
+		var description = data.courseName + " " + data.teacherName; //'A very long and boring description of what is the agenda of this super exclusiv pow-wow';
 
 		regularMode = true;
 		startweek = 0;
@@ -357,7 +374,7 @@ if (Boolean(window.$) && Boolean(window.table0)) {
 			end.setSeconds(0);
 			var rrul = {FREQ: 'WEEKLY', COUNT: countweek, INTERVAL: intervalweek};
 
-			icsObj.addEvent(title,description, place, begin, end, rrul, url, categories, alarms);
+			icsObj.addEvent(title,description, place, begin, end, rrul, url, alarms);
 		} else {
 			for (var i in data.vaildWeeks)
 				if (data.vaildWeeks[i] == 1) {
@@ -371,7 +388,7 @@ if (Boolean(window.$) && Boolean(window.table0)) {
 					end.setSeconds(0);
 					var rrul = {FREQ: 'WEEKLY', COUNT: 1, INTERVAL: 1};
 
-					icsObj.addEvent(title,description, place, begin, end, rrul, url, categories, alarms);
+					icsObj.addEvent(title,description, place, begin, end, rrul, url, alarms);
 				}
 		}
 	}
